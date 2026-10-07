@@ -1,3 +1,4 @@
+<?php $featured = reset($products) ?: ['name' => 'Mộc Trà', 'type' => 'peach', 'fruit' => '🍑']; ?>
 <section
     class="relative grid gap-8 overflow-hidden px-6 pt-10 pb-16 md:min-h-[580px] md:grid-cols-[1.08fr_1fr] md:px-12 md:pt-16"
 >
@@ -39,16 +40,18 @@
             <small class="mt-1 font-sans text-[7px]">TRÁI CÂY TƯƠI</small>
         </div>
         <div class="relative scale-85 md:scale-100"><?php render('components/drink', [
-            'product' => $products[1],
+            'product' => $featured,
             'hero' => true,
         ]); ?></div>
         <a
-            href="<?= e(url('product', ['id' => 1])) ?>"
+            href="<?= e(
+                isset($featured['id']) ? url('product', ['id' => $featured['id']]) : url('menu'),
+            ) ?>"
             class="absolute bottom-0 left-1/2 z-10 flex w-64 -translate-x-1/2 items-center gap-3 rounded-lg border bg-background p-4 text-xs shadow-sm"
         >
             <span class="text-2xl">🍑</span>
             <span>
-                Trà đào cam sả
+                <?= e($featured['name']) ?>
                 <small class="mt-1 block text-[8px] text-muted-foreground">
                     Một chút nắng trong ly trà
                 </small>

@@ -6,12 +6,14 @@
         "build:css": "tailwindcss -i resources/theme.css -o assets/css/app.css --minify",
         "watch:css": "tailwindcss -i resources/theme.css -o assets/css/app.css --watch",
         "format": "prettier --write .",
-        "format:check": "prettier --check ."
+        "format:check": "prettier --check .",
+        "test:e2e": "node tests/e2e.mjs"
     },
     "devDependencies": {
-        "tailwindcss": "^4.3.3",
+        "@prettier/plugin-php": "^0.24.0",
         "@tailwindcss/cli": "^4.3.3",
+        "playwright": "1.63.0",
         "prettier": "3.9.9",
-        "@prettier/plugin-php": "^0.24.0"
+        "tailwindcss": "^4.3.3"
     }
 }

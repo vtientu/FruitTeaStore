@@ -27,7 +27,6 @@
                 data-product-form
                 data-base-price="<?= e($product['price']) ?>"
                 data-size-price="<?= LARGE_SIZE_SURCHARGE ?>"
-                data-topping-price="<?= TOPPING_PRICE ?>"
             >
                 <?php csrfField(); ?>
                 <input type="hidden" name="action" value="add" />
@@ -82,21 +81,22 @@
                     <legend class="mb-3 text-xs font-semibold">
                         Thêm chút thú vị
                         <span class="ml-2 text-[10px] font-normal text-muted-foreground">
-                            +<?= money(TOPPING_PRICE) ?> / loại
+                            Chọn loại bạn thích
                         </span>
                     </legend>
                     <div class="flex flex-wrap gap-2">
-                        <?php foreach (TOPPINGS as $topping): ?>
+                        <?php foreach ($toppings as $topping): ?>
                         <label
                             class="flex cursor-pointer items-center gap-2 rounded-md border p-3 text-xs has-checked:bg-accent"
                         >
                             <input
                                 type="checkbox"
                                 name="toppings[]"
-                                value="<?= e($topping) ?>"
+                                value="<?= e($topping['id']) ?>"
+                                data-price="<?= e($topping['price']) ?>"
                                 class="size-4 accent-primary"
                             />
-                            <?= e($topping) ?>
+                            <?= e($topping['name']) ?> (+<?= money($topping['price']) ?>)
                         </label>
                         <?php endforeach; ?>
                     </div>
@@ -123,3 +123,5 @@
         </div>
     </div>
 </section>
+
+<?php render('components/reviews', ['product' => $product, 'user' => $user]); ?>

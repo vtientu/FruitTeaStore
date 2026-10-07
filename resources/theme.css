@@ -66,3 +66,20 @@
         animation-duration: 0.01ms !important;
     }
 }
+@layer components {
+    .table-wrap {
+        @apply overflow-x-auto rounded-xl border;
+    }
+    .admin-table {
+        @apply w-full text-left text-xs;
+    }
+    .admin-table th {
+        @apply whitespace-nowrap bg-secondary px-4 py-4 font-semibold;
+    }
+    .admin-table td {
+        @apply border-t px-4 py-4 align-middle;
+    }
+    .admin-table tbody tr:hover {
+        @apply bg-secondary/40;
+    }
+}

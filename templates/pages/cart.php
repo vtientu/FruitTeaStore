@@ -70,6 +70,7 @@
         <?php render('components/order-summary', [
             'subtotal' => $subtotal,
             'showCheckout' => true,
+            'discount' => $discount,
         ]); ?>
     </div>
     <?php endif; ?>

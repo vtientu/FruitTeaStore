@@ -1,79 +1,83 @@
 <?php
-
-declare(strict_types=1);
-
-function handlePost(array $products): never
+function handlePost(array $products, array $toppings, bool $cartChanged): never
 {
-    if (!hash_equals($_SESSION['csrf_token'], inputString($_POST, 'csrf_token'))) {
-        http_response_code(403);
-        echo 'Phiên gửi biểu mẫu không hợp lệ. Vui lòng tải lại trang.';
-        exit();
-    }
     $action = inputString($_POST, 'action');
+    $returnPage = match ($action) {
+        'login' => 'login',
+        'register' => 'register',
+        'checkout' => 'checkout',
+        'review' => 'product',
+        default => 'cart',
+    };
+    $returnParams = $action === 'review' ? ['id' => (int) inputString($_POST, 'product_id')] : [];
+    if (!hash_equals($_SESSION['csrf_token'], inputString($_POST, 'csrf_token'))) {
+        flash('Phiên biểu mẫu đã hết hạn. Vui lòng thử lại.');
+        redirect('home');
+    }
     try {
+        if (str_starts_with($action, 'admin_')) {
+            handleAdmin($action);
+        }
+        if (in_array($action, ['login', 'register', 'logout'], true)) {
+            handleAuth($action);
+        }
         switch ($action) {
             case 'add':
-                $item = configuredItem($_POST, $products);
-                $item['price'] = $item['unit_price'];
-                unset($item['unit_price']);
-                $_SESSION['cart'][bin2hex(random_bytes(8))] = $item;
+                $_SESSION['cart'][bin2hex(random_bytes(8))] = configuredItem(
+                    $_POST,
+                    $products,
+                    $toppings,
+                );
                 flash('Đã thêm món ngon vào giỏ!');
-                redirect('cart');
+                break;
             case 'quantity':
                 $key = inputString($_POST, 'key');
-                $quantity = filter_var(inputString($_POST, 'quantity'), FILTER_VALIDATE_INT);
-                if (
-                    !isset($_SESSION['cart'][$key]) ||
-                    $quantity === false ||
-                    $quantity < 1 ||
-                    $quantity > MAX_QUANTITY
-                ) {
-                    throw new InvalidArgumentException('Số lượng không hợp lệ.');
+                if (!isset($_SESSION['cart'][$key])) {
+                    throw new InvalidArgumentException('Món không còn trong giỏ.');
                 }
-                $_SESSION['cart'][$key]['quantity'] = $quantity;
-                redirect('cart');
+                $_SESSION['cart'][$key]['quantity'] = integerField(
+                    $_POST,
+                    'quantity',
+                    1,
+                    MAX_QUANTITY,
+                );
+                break;
             case 'remove':
                 unset($_SESSION['cart'][inputString($_POST, 'key')]);
-                flash('Đã xóa món khỏi giỏ.');
-                redirect('cart');
+                break;
+            case 'voucher':
+                $code = strtoupper(inputString($_POST, 'code'));
+                if ($code !== '') {
+                    voucherDiscount($code, cartSubtotal($_SESSION['cart']));
+                }
+                $_SESSION['voucher'] = $code;
+                flash($code === '' ? 'Đã bỏ voucher.' : 'Đã áp dụng voucher.');
+                break;
             case 'checkout':
-                if (empty($_SESSION['cart'])) {
-                    throw new InvalidArgumentException('Giỏ hàng đang trống.');
+                if ($cartChanged) {
+                    flash('Giỏ hàng đã thay đổi. Vui lòng kiểm tra lại giá/món trước khi đặt.');
+                    redirect('cart');
                 }
-                $name = inputString($_POST, 'name');
-                $phone = inputString($_POST, 'phone');
-                $address = inputString($_POST, 'address');
-                if (
-                    $name === '' ||
-                    strlen($name) > 300 ||
-                    !preg_match('/^\+?[0-9]{9,15}$/D', $phone) ||
-                    $address === '' ||
-                    strlen($address) > 1500
-                ) {
-                    $_SESSION['checkout_old'] = [
-                        'name' => $name,
-                        'phone' => $phone,
-                        'address' => $address,
-                    ];
-                    flash('Vui lòng nhập họ tên, địa chỉ và số điện thoại gồm 9–15 chữ số.');
-                    redirect('checkout');
-                }
-                $subtotal = cartSubtotal($_SESSION['cart']);
-                $_SESSION['order'] = [
-                    'id' => 'MOC-' . strtoupper(bin2hex(random_bytes(3))),
-                    'items' => $_SESSION['cart'],
-                    'total' => $subtotal + deliveryFee($subtotal),
-                    'recipient' => ['name' => $name, 'phone' => $phone, 'address' => $address],
-                ];
-                $_SESSION['cart'] = [];
-                unset($_SESSION['checkout_old']);
-                flash('Đã tạo đơn mẫu. Mộc chưa gửi đơn cho cửa hàng.');
+                placeOrder();
+            case 'cancel_order':
+                $user = requireLogin();
+                $affected = query(
+                    "UPDATE orders SET status='cancelled' WHERE id=? AND user_id=? AND status='pending'",
+                    [(int) inputString($_POST, 'order_id'), $user['id']],
+                )->rowCount();
+                flash($affected ? 'Đã hủy đơn hàng.' : 'Đơn đã được xử lý, không thể hủy.');
                 redirect('orders');
+            case 'review':
+                saveReview();
             default:
                 throw new InvalidArgumentException('Thao tác không hợp lệ.');
         }
+        redirect('cart');
     } catch (InvalidArgumentException $error) {
         flash($error->getMessage());
-        redirect('cart');
+    } catch (PDOException $error) {
+        error_log($error->getMessage());
+        flash('Không lưu được dữ liệu. Vui lòng thử lại; giỏ hàng của bạn vẫn được giữ.');
     }
+    redirect($returnPage, $returnParams);
 }

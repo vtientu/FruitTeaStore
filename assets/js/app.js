@@ -9,7 +9,10 @@ if (productForm) {
         const unitPrice =
             Number(productForm.dataset.basePrice) +
             (data.get('size') === 'L' ? Number(productForm.dataset.sizePrice) : 0) +
-            data.getAll('toppings[]').length * Number(productForm.dataset.toppingPrice);
+            [...productForm.querySelectorAll('input[name="toppings[]"]:checked')].reduce(
+                (sum, input) => sum + Number(input.dataset.price),
+                0,
+            );
         output.textContent = formatMoney(unitPrice * quantity);
     };
     productForm.addEventListener('input', updateTotal);
@@ -19,5 +22,11 @@ document.addEventListener('keydown', (event) => {
     document.querySelectorAll('details[open]').forEach((menu) => {
         menu.open = false;
         menu.querySelector('summary')?.focus();
+    });
+});
+
+document.querySelectorAll('form[data-confirm]').forEach((form) => {
+    form.addEventListener('submit', (event) => {
+        if (!window.confirm(form.dataset.confirm)) event.preventDefault();
     });
 });

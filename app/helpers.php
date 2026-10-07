@@ -43,3 +43,39 @@ function flash(string $message): void
 {
     $_SESSION['flash'] = $message;
 }
+
+function requiredText(array $input, string $key, int $max): string
+{
+    $value = inputString($input, $key);
+    if ($value === '' || preg_match_all('/./us', $value) > $max || !preg_match('//u', $value)) {
+        throw new InvalidArgumentException('Vui lòng nhập đủ thông tin và đúng độ dài cho phép.');
+    }
+    return $value;
+}
+function integerField(array $input, string $key, int $min, int $max): int
+{
+    $value = filter_var(inputString($input, $key), FILTER_VALIDATE_INT);
+    if ($value === false || $value < $min || $value > $max) {
+        throw new InvalidArgumentException('Giá trị số không hợp lệ: ' . $key);
+    }
+    return $value;
+}
+function orderStatuses(): array
+{
+    return [
+        'pending' => 'Chờ xác nhận',
+        'preparing' => 'Đang pha chế',
+        'shipping' => 'Đang giao hàng',
+        'completed' => 'Hoàn thành',
+        'cancelled' => 'Đã hủy',
+    ];
+}
+function nextStatuses(string $status): array
+{
+    return match ($status) {
+        'pending' => ['preparing', 'cancelled'],
+        'preparing' => ['shipping', 'cancelled'],
+        'shipping' => ['completed'],
+        default => [],
+    };
+}
