@@ -1,0 +1,271 @@
+/* Bespoke drink illustration; app layouts and controls use Tailwind/shadcn. */
+.hero-drink {
+    height: 400px !important;
+    width: 100% !important;
+    transform: rotate(-9deg);
+}
+.drink-art {
+    height: 234px;
+    position: relative;
+    margin: auto;
+    width: 100%;
+    isolation: isolate;
+}
+.cup {
+    position: absolute;
+    left: 50%;
+    top: 42px;
+    transform: translateX(-50%);
+    width: 110px;
+    height: 163px;
+    filter: drop-shadow(8px 12px 8px #67491b26);
+    z-index: 2;
+}
+.tea {
+    position: absolute;
+    inset: 4px 0 0;
+    background: linear-gradient(100deg, #ffe6aadd, #db8e26d9 48%, #f5ba56ed);
+    clip-path: polygon(0 0, 100% 0, 88% 100%, 12% 100%);
+    border-radius: 7px 7px 18px 18px;
+    border: 3px solid #ffffff80;
+    overflow: hidden;
+    box-shadow:
+        inset 7px 0 8px #ffffff7a,
+        inset -5px 0 8px #c7752840;
+}
+.berry .tea {
+    background: linear-gradient(100deg, #f7adb7, #bb3756b5 50%, #ec8493);
+}
+.lychee .tea {
+    background: linear-gradient(100deg, #edf0ad, #a8bd5aa6 50%, #d2dd85);
+}
+.mango .tea {
+    background: linear-gradient(100deg, #ffdf73, #edae20c9 50%, #f5cf51);
+}
+.cup-lid {
+    position: absolute;
+    z-index: 5;
+    left: -5%;
+    top: 0;
+    width: 110%;
+    height: 10px;
+    background: linear-gradient(#fdfbf0e6, #d8d6c1b3);
+    border: 1px solid #ffffffb0;
+    border-radius: 5px;
+}
+.straw {
+    position: absolute;
+    left: 54%;
+    top: 9px;
+    background: linear-gradient(90deg, #fff9d8, #d7b77f, #fff9d8);
+    width: 6px;
+    height: 65px;
+    transform: rotate(8deg);
+    z-index: 1;
+}
+.tea > i {
+    position: absolute;
+    top: 5px;
+    left: 9px;
+    width: 33px;
+    height: 29px;
+    border-radius: 5px;
+    background: #ffffff57;
+    border: 1px solid #fff8;
+    transform: rotate(20deg);
+}
+.tea > i:nth-child(2) {
+    left: 54px;
+    top: 12px;
+    transform: rotate(-25deg);
+}
+.tea > i:nth-child(3) {
+    left: 28px;
+    top: 36px;
+    transform: rotate(-15deg);
+}
+.tea > i:nth-child(4) {
+    left: 70px;
+    top: 52px;
+    transform: rotate(32deg);
+}
+.cup-brand {
+    position: absolute;
+    top: 55px;
+    left: 0;
+    right: 0;
+    text-align: center;
+    color: #fcf9e9;
+    font: bold 36px 'Playfair Display';
+    line-height: 1;
+    text-shadow: 0 1px 1px #a16e3130;
+}
+.cup-brand span {
+    display: block;
+    font: 4px 'Be Vietnam Pro';
+    letter-spacing: 1px;
+    margin: 7px 0;
+}
+.cup-brand svg {
+    margin: 4px auto;
+}
+.pearls {
+    position: absolute;
+    bottom: 4px;
+    left: 10px;
+    color: #a5693985;
+    font-size: 14px;
+    white-space: nowrap;
+}
+.slice {
+    position: absolute;
+    width: 47px;
+    height: 47px;
+    bottom: 14px;
+    right: -11px;
+    background: repeating-conic-gradient(#fce493 0deg 30deg, #fff8bc 30deg 33deg);
+    border: 4px solid #f4aa26;
+    border-radius: 50%;
+    opacity: 0.65;
+}
+.fruit {
+    position: absolute;
+    z-index: 3;
+    font-size: 56px;
+    filter: drop-shadow(3px 7px 4px #634e3320);
+}
+.fruit-one {
+    bottom: 7px;
+    left: 13%;
+    transform: rotate(-12deg);
+}
+.fruit-two {
+    bottom: 12px;
+    right: 10%;
+    font-size: 43px;
+    transform: rotate(18deg);
+}
+.art-leaf {
+    position: absolute;
+    top: 35px;
+    right: 16%;
+    font-size: 37px;
+    transform: rotate(30deg);
+    z-index: 3;
+}
+.cup-shadow {
+    position: absolute;
+    bottom: 15px;
+    left: 25%;
+    width: 50%;
+    height: 12px;
+    background: #78642e24;
+    border-radius: 50%;
+    filter: blur(6px);
+}
+.hero-drink .cup {
+    width: 178px;
+    height: 266px;
+    top: 61px;
+}
+.hero-drink .straw {
+    top: 7px;
+    height: 100px;
+    width: 8px;
+}
+.hero-drink .cup-brand {
+    top: 92px;
+    font-size: 58px;
+}
+.hero-drink .cup-brand span {
+    font-size: 6px;
+    margin: 10px 0;
+}
+.hero-drink .cup-lid {
+    height: 15px;
+}
+.hero-drink .tea > i {
+    width: 48px;
+    height: 45px;
+    top: 12px;
+    left: 19px;
+}
+.hero-drink .tea > i:nth-child(2) {
+    left: 92px;
+    top: 17px;
+}
+.hero-drink .tea > i:nth-child(3) {
+    left: 49px;
+    top: 61px;
+}
+.hero-drink .tea > i:nth-child(4) {
+    left: 110px;
+    top: 82px;
+}
+.hero-drink .fruit-one {
+    font-size: 103px;
+    left: 6%;
+    bottom: 21px;
+}
+.hero-drink .fruit-two {
+    font-size: 74px;
+    right: 8%;
+    bottom: 31px;
+}
+.hero-drink .art-leaf {
+    font-size: 69px;
+    top: 93px;
+    right: 9%;
+}
+.hero-drink .slice {
+    width: 82px;
+    height: 82px;
+    bottom: 28px;
+}
+.hero-drink .pearls {
+    font-size: 24px;
+    bottom: 10px;
+}
+.hero-drink .cup-shadow {
+    bottom: 43px;
+}
+
+.drink-art {
+    transition: transform 0.3s;
+}
+
+@media (max-width: 767px) {
+    .drink-art:not(.hero-drink) {
+        height: 200px;
+    }
+    .drink-art:not(.hero-drink) .cup {
+        width: 92px;
+        height: 141px;
+        top: 33px;
+    }
+    .drink-art:not(.hero-drink) .cup-brand {
+        font-size: 30px;
+        top: 46px;
+    }
+    .drink-art:not(.hero-drink) .cup-brand span {
+        font-size: 3px;
+    }
+    .drink-art:not(.hero-drink) .fruit-one {
+        left: 2%;
+        bottom: 7px;
+        font-size: 40px;
+    }
+    .drink-art:not(.hero-drink) .fruit-two {
+        right: 1%;
+        bottom: 9px;
+        font-size: 32px;
+    }
+    .drink-art:not(.hero-drink) .art-leaf {
+        right: 7%;
+        font-size: 29px;
+        top: 28px;
+    }
+    .drink-art:not(.hero-drink) .straw {
+        top: 4px;
+    }
+}

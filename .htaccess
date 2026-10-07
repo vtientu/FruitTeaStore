@@ -1,0 +1,5 @@
+Options -Indexes
+DirectoryIndex index.php
+<FilesMatch "^(package(-lock)?\.json|README\.md|\.env|\.gitignore|\.prettier.*)$">
+    Require all denied
+</FilesMatch>

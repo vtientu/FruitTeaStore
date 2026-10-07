@@ -1,0 +1,17 @@
+{
+    "name": "moc-tra-php-assets",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build:css": "tailwindcss -i resources/theme.css -o assets/css/app.css --minify",
+        "watch:css": "tailwindcss -i resources/theme.css -o assets/css/app.css --watch",
+        "format": "prettier --write .",
+        "format:check": "prettier --check ."
+    },
+    "devDependencies": {
+        "tailwindcss": "^4.3.3",
+        "@tailwindcss/cli": "^4.3.3",
+        "prettier": "3.9.9",
+        "@prettier/plugin-php": "^0.24.0"
+    }
+}
