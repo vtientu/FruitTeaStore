@@ -1,4 +1,4 @@
-/* Bespoke drink illustration; app layouts and controls use Tailwind/shadcn. */
+/* Bespoke drink illustration; app layouts and controls use Tailwind. */
 .hero-drink {
     height: 400px !important;
     width: 100% !important;
@@ -105,9 +105,6 @@
     font: 4px 'Be Vietnam Pro';
     letter-spacing: 1px;
     margin: 7px 0;
-}
-.cup-brand svg {
-    margin: 4px auto;
 }
 .pearls {
     position: absolute;

@@ -128,3 +128,56 @@ npm run test:e2e
 Suite tự tạo admin khi database trống. Nếu đã cài đặt, cần truyền `E2E_ADMIN_EMAIL` và `E2E_ADMIN_PASSWORD`, hoặc reset lại database thử nghiệm. Có thể đặt `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` nếu dùng Chromium có sẵn. Sau kiểm tra, đổi cấu hình về database làm bài của bạn.
 
 Đã kiểm tra trên Linux với PHP 8.4, MariaDB 11.8 và Chromium, gồm chạy ở đường dẫn con `/WebPHP/`. XAMPP trên Windows cá nhân cần chạy theo hướng dẫn đầu trang; môi trường cloud không truy cập được máy cá nhân.
+
+## Bổ sung 24 món mẫu vào website đã cài
+
+Menu mẫu gồm 12 món trà trái cây, 5 món trà hoa và 7 món trà nguyên bản. Cài mới tự nhận đủ 24 món từ `database/seed_products.php`.
+
+Với InfinityFree đang có dữ liệu:
+
+1. Export database hiện tại trong phpMyAdmin để giữ bản sao.
+2. Chọn đúng database của website → **Import** → chọn `database/seed_products.sql` trong source mới → **Go/Import**.
+3. Mở lại thực đơn và trang Admin → Sản phẩm.
+
+File SQL chỉ thêm món chưa tồn tại theo **tên**, không sửa giá/mô tả/trạng thái món đã có, không thay tài khoản hoặc đơn hàng. Import lại không thêm trùng tên. Nếu từng đổi tên món mẫu, tên gốc được xem là món còn thiếu và sẽ được thêm; món/danh mục đã ẩn vẫn giữ trạng thái ẩn. Import từng lần, không chạy đồng thời. Không import lại `schema.sql` hoặc reset database để thêm món.
+
+Upload source mới không tự thay đổi dữ liệu database trên hosting. File SQL này cần import riêng. Nó cũng không tạo tài khoản admin cho database chưa cài đặt.
+
+Khi sửa danh sách mẫu, tạo lại SQL từ cùng nguồn PHP:
+
+```sh
+php database/export_seed.php
+php tests/seed_test.php
+```
+
+Bài kiểm tra seed tạo rồi xóa một database tạm có tên ngẫu nhiên `webphp_test_seed_*`, không thay database website; tài khoản MySQL cần quyền tạo/xóa database thử nghiệm. Chạy kiểm tra này trên local/cloud, không cần upload lên hosting.
+
+## Vai trò các phần — dành cho người quen React
+
+| Phần                                            | Vai trò                                                  | Liên hệ với React/JS                          |
+| ----------------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
+| `index.php`                                     | Điểm vào, ghép layout và page                            | Khung `App`, nhưng render trên server         |
+| `app/bootstrap.php`                             | Khởi tạo session, đọc route, kiểm tra quyền, tải dữ liệu | Router và bước chuẩn bị dữ liệu               |
+| `app/actions.php`                               | Nhận POST và điều phối theo `action`                     | Handler nhận form/API request                 |
+| `app/auth_actions.php`                          | Đăng ký, đăng nhập, đăng xuất                            | Backend xác thực                              |
+| `app/cart.php`                                  | Tính giá, kiểm tra tùy chọn, voucher                     | Hàm nghiệp vụ dùng chung                      |
+| `app/order_actions.php`                         | Ghi đơn trong transaction, lưu đánh giá                  | Service xử lý đơn                             |
+| `app/admin_actions.php`                         | Validate và ghi thay đổi quản trị                        | Backend CRUD                                  |
+| `app/database.php`, `config.php`                | Kết nối PDO, prepared statements, cấu hình               | Database client phía backend                  |
+| `app/install.php`                               | Khởi tạo bảng, admin và dữ liệu mẫu lần đầu              | Setup/seed                                    |
+| `app/helpers.php`                               | Render, URL, redirect, escape, CSRF, validation          | Utilities                                     |
+| `templates/layout/`                             | Header và footer                                         | Layout components                             |
+| `templates/pages/`                              | Các màn hình khách hàng và khung admin                   | Route components                              |
+| `templates/components/`                         | Card, ly trà, tóm tắt đơn, đánh giá                      | Reusable components, không có React lifecycle |
+| `templates/admin/`                              | Các màn hình quản trị                                    | Admin pages                                   |
+| `database/schema.sql`                           | Cấu trúc 8 bảng và quan hệ                               | Database schema                               |
+| `database/seed_products.php`                    | Nguồn dữ liệu 24 món cho cài mới                         | Seed fixtures                                 |
+| `database/export_seed.php`, `seed_products.sql` | Xuất và import các món còn thiếu vào database đã cài     | Công cụ cập nhật dữ liệu mẫu                  |
+| `resources/`                                    | Source Tailwind và hình minh họa CSS                     | Source styles                                 |
+| `assets/`                                       | CSS đã build và JS chạy trên trình duyệt                 | Static assets                                 |
+| `tests/`                                        | Kiểm tra logic, seed và trình duyệt                      | Unit/integration/E2E checks                   |
+| `package.json`, lockfile, Prettier              | Công cụ build, format, test                              | Dev tooling, không phải server Node.js        |
+
+GET: `index.php?page=menu` → bootstrap tải sản phẩm → template tạo HTML → trình duyệt hiển thị. POST: form gửi `action` và CSRF → kiểm tra quyền/dữ liệu → cập nhật session hoặc MySQL → redirect để render lại trang. Session giữ giỏ và ID đăng nhập; MySQL giữ dữ liệu lâu dài. JS chỉ tăng tiện ích, giá cuối cùng do PHP tính.
+
+Rà soát code: đã bỏ selector `.cup-brand svg` vì component ly trà không có SVG và sửa chú thích shadcn cũ. Các hàm xử lý, template và công cụ phát triển còn lại đều có nơi sử dụng; không xóa chỉ vì chúng không được upload lên hosting.
