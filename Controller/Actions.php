@@ -1,6 +1,10 @@
 <?php
+// =========================
+// NHẬN FORM VÀ ĐIỀU PHỐI THAO TÁC
+// =========================
 function handlePost(array $products, array $toppings, bool $cartChanged): never
 {
+    global $data;
     $action = inputString($_POST, 'action');
     $returnPage = match ($action) {
         'login' => 'login',
@@ -61,10 +65,9 @@ function handlePost(array $products, array $toppings, bool $cartChanged): never
                 placeOrder();
             case 'cancel_order':
                 $user = requireLogin();
-                $affected = query(
-                    "UPDATE orders SET status='cancelled' WHERE id=? AND user_id=? AND status='pending'",
-                    [(int) inputString($_POST, 'order_id'), $user['id']],
-                )->rowCount();
+                $affected = $data
+                    ->cancel_order((int) inputString($_POST, 'order_id'), $user['id'])
+                    ->rowCount();
                 flash($affected ? 'Đã hủy đơn hàng.' : 'Đơn đã được xử lý, không thể hủy.');
                 redirect('orders');
             case 'review':

@@ -1,6 +1,6 @@
 <?php
-require __DIR__ . '/../app/helpers.php';
-require __DIR__ . '/../app/cart.php';
+require __DIR__ . '/../Controller/Functions.php';
+require __DIR__ . '/../Model/Cart.php';
 $products = require __DIR__ . '/../database/seed_products.php';
 $toppings = [
     1 => ['id' => 1, 'name' => 'Trân châu trắng', 'price' => 7000],

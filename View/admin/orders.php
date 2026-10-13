@@ -1,24 +1,8 @@
 <?php
 $status = inputString($_GET, 'status');
 $search = inputString($_GET, 'q');
-$params = [];
-$conditions = [];
-if (isset(orderStatuses()[$status])) {
-    $conditions[] = 'o.status=?';
-    $params[] = $status;
-}
-if ($search !== '') {
-    $conditions[] = '(o.code LIKE ? OR o.recipient_name LIKE ?)';
-    $params[] = '%' . $search . '%';
-    $params[] = '%' . $search . '%';
-}
-$rows = query(
-    'SELECT o.* FROM orders o' .
-        ($conditions ? ' WHERE ' . implode(' AND ', $conditions) : '') .
-        ' ORDER BY o.id DESC',
-    $params,
-)->fetchAll();
-$detail = query('SELECT * FROM orders WHERE id=?', [(int) inputString($_GET, 'id')])->fetch();
+$rows = $data->select_filtered_orders($status, $search)->fetchAll();
+$detail = $data->select_order_id((int) inputString($_GET, 'id'))->fetch();
 ?>
 <form method="get" class="mb-6 flex flex-wrap gap-3">
     <input type="hidden" name="page" value="admin" />

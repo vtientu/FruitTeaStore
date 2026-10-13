@@ -1,10 +1,7 @@
 <?php
-$rows = query('SELECT * FROM vouchers ORDER BY id DESC')->fetchAll();
+$rows = $data->select_vouchers()->fetchAll();
 $edit = inputString($_GET, 'edit');
-$item =
-    $edit && $edit !== 'new'
-        ? query('SELECT * FROM vouchers WHERE id=?', [(int) $edit])->fetch()
-        : [];
+$item = $edit && $edit !== 'new' ? $data->select_voucher_id((int) $edit)->fetch() : [];
 $item =
     ($_SESSION['admin_old']['action'] ?? '') === 'admin_voucher'
         ? $_SESSION['admin_old']

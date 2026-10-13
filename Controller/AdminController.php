@@ -1,6 +1,10 @@
 <?php
+// =========================
+// QUẢN LÝ SẢN PHẨM, DANH MỤC, TOPPING, VOUCHER, ĐƠN VÀ TÀI KHOẢN
+// =========================
 function handleAdmin(string $action): never
 {
+    global $data, $account;
     $admin = requireAdmin();
     $section = match ($action) {
         'admin_product' => 'products',
@@ -31,14 +35,14 @@ function handleAdmin(string $action): never
                 ) {
                     throw new InvalidArgumentException('Mục không hợp lệ.');
                 }
-                query('UPDATE ' . $section . ' SET active=0 WHERE id=?', [$id]);
+                $data->hide_item($section, [$id]);
                 break;
             case 'admin_product':
                 $name = requiredText($_POST, 'name', 120);
                 $description = requiredText($_POST, 'description', 500);
                 $price = integerField($_POST, 'price', 1000, 1000000);
                 $category = integerField($_POST, 'category_id', 1, PHP_INT_MAX);
-                if (!query('SELECT id FROM categories WHERE id=?', [$category])->fetch()) {
+                if (!$data->select_category_id($category)->fetch()) {
                     throw new InvalidArgumentException('Danh mục không tồn tại.');
                 }
                 $color = inputString($_POST, 'color');
@@ -61,23 +65,17 @@ function handleAdmin(string $action): never
                     isset($_POST['active']) ? 1 : 0,
                 ];
                 if ($id) {
-                    query(
-                        'UPDATE products SET category_id=?,name=?,description=?,price=?,color=?,fruit=?,tag=?,type=?,active=? WHERE id=?',
-                        [...$params, $id],
-                    );
+                    $data->update_shop_id(...[...$params, $id]);
                 } else {
-                    query(
-                        'INSERT INTO products(category_id,name,description,price,color,fruit,tag,type,active) VALUES(?,?,?,?,?,?,?,?,?)',
-                        $params,
-                    );
+                    $data->insert_shop(...$params);
                 }
                 break;
             case 'admin_category':
                 $params = [requiredText($_POST, 'name', 100), isset($_POST['active']) ? 1 : 0];
                 if ($id) {
-                    query('UPDATE categories SET name=?,active=? WHERE id=?', [...$params, $id]);
+                    $data->update_category(...[...$params, $id]);
                 } else {
-                    query('INSERT INTO categories(name,active) VALUES(?,?)', $params);
+                    $data->insert_category(...$params);
                 }
                 break;
             case 'admin_topping':
@@ -87,12 +85,9 @@ function handleAdmin(string $action): never
                     isset($_POST['active']) ? 1 : 0,
                 ];
                 if ($id) {
-                    query('UPDATE toppings SET name=?,price=?,active=? WHERE id=?', [
-                        ...$params,
-                        $id,
-                    ]);
+                    $data->update_topping(...[...$params, $id]);
                 } else {
-                    query('INSERT INTO toppings(name,price,active) VALUES(?,?,?)', $params);
+                    $data->insert_topping(...$params);
                 }
                 break;
             case 'admin_voucher':
@@ -113,9 +108,7 @@ function handleAdmin(string $action): never
                 $value = integerField($_POST, 'value', 1, $kind === 'percent' ? 100 : 1000000);
                 $maxUses = integerField($_POST, 'max_uses', 1, 1000000);
                 if ($id) {
-                    $used = (int) query('SELECT used_count FROM vouchers WHERE id=?', [
-                        $id,
-                    ])->fetchColumn();
+                    $used = (int) $data->select_voucher_usage($id)->fetchColumn();
                     if ($maxUses < $used) {
                         throw new InvalidArgumentException(
                             'Lượt tối đa phải lớn hơn hoặc bằng lượt đã dùng.',
@@ -132,32 +125,20 @@ function handleAdmin(string $action): never
                     isset($_POST['active']) ? 1 : 0,
                 ];
                 if ($id) {
-                    query(
-                        'UPDATE vouchers SET code=?,kind=?,value=?,min_total=?,expires_on=?,max_uses=?,active=? WHERE id=?',
-                        [...$params, $id],
-                    );
+                    $data->update_voucher(...[...$params, $id]);
                 } else {
-                    query(
-                        'INSERT INTO vouchers(code,kind,value,min_total,expires_on,max_uses,active) VALUES(?,?,?,?,?,?,?)',
-                        $params,
-                    );
+                    $data->insert_voucher(...$params);
                 }
                 break;
             case 'admin_order':
                 $status = inputString($_POST, 'status');
-                $current = query('SELECT status FROM orders WHERE id=?', [$id])->fetchColumn();
+                $current = $data->select_order_status($id)->fetchColumn();
                 if (!$current || !in_array($status, nextStatuses($current), true)) {
                     throw new InvalidArgumentException(
                         'Không thể chuyển trạng thái này. Hãy tải lại đơn hàng.',
                     );
                 }
-                if (
-                    !query('UPDATE orders SET status=? WHERE id=? AND status=?', [
-                        $status,
-                        $id,
-                        $current,
-                    ])->rowCount()
-                ) {
+                if (!$data->update_order_status($status, $id, $current)->rowCount()) {
                     throw new InvalidArgumentException('Đơn vừa được cập nhật. Vui lòng thử lại.');
                 }
                 break;
@@ -166,7 +147,7 @@ function handleAdmin(string $action): never
                     throw new InvalidArgumentException('Không được khóa chính mình.');
                 }
                 $active = integerField($_POST, 'active', 0, 1);
-                query("UPDATE users SET active=? WHERE id=? AND role='customer'", [$active, $id]);
+                $account->update_user_status($active, $id);
                 break;
             default:
                 throw new InvalidArgumentException('Thao tác quản trị không hợp lệ.');

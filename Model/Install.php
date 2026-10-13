@@ -11,7 +11,7 @@ function installDatabase(array $input): void
     ) {
         throw new InvalidArgumentException('Email hợp lệ và mật khẩu từ 8–72 ký tự.');
     }
-    $config = require __DIR__ . '/config.php';
+    $config = require __DIR__ . '/../app/config.php';
     if (!preg_match('/^[a-zA-Z0-9_]+$/D', $config['database'])) {
         throw new InvalidArgumentException('Tên database chỉ dùng chữ, số và dấu gạch dưới.');
     }

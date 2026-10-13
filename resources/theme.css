@@ -2,7 +2,7 @@
 @import 'tailwindcss' source(none);
 @import './drink-art.css';
 @source '../index.php';
-@source '../templates';
+@source '../View';
 @theme {
     --font-sans: 'Be Vietnam Pro', sans-serif;
     --font-display: 'Playfair Display', serif;

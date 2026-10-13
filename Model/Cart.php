@@ -84,12 +84,11 @@ function syncCart(array $products, array $toppings): bool
 }
 function voucherDiscount(string $code, int $subtotal, bool $lock = false): int
 {
+    global $data;
     if ($code === '') {
         return 0;
     }
-    $voucher = query('SELECT * FROM vouchers WHERE code=?' . ($lock ? ' FOR UPDATE' : ''), [
-        $code,
-    ])->fetch();
+    $voucher = $data->select_voucher_code($lock, [$code])->fetch();
     if (
         !$voucher ||
         !$voucher['active'] ||

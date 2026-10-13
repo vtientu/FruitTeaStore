@@ -1,5 +1,5 @@
 <?php
-$orders = query('SELECT * FROM orders WHERE user_id=? ORDER BY id DESC', [$user['id']])->fetchAll();
+$orders = $data->select_user_orders($user['id'])->fetchAll();
 $selectedId = (int) inputString($_GET, 'id');
 $selected = null;
 foreach ($orders as $row) {

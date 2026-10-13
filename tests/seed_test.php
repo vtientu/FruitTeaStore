@@ -4,7 +4,7 @@ if (PHP_SAPI !== 'cli') {
     http_response_code(404);
     exit();
 }
-require __DIR__ . '/../app/database.php';
+require __DIR__ . '/../Model/Connect.php';
 $connection = connectDatabase(false);
 $name = 'webphp_test_seed_' . bin2hex(random_bytes(6));
 $connection->exec("CREATE DATABASE `$name` CHARACTER SET utf8mb4");

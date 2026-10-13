@@ -65,32 +65,69 @@ Phạm vi bài tập dùng COD, chưa tích hợp cổng thanh toán, đơn vị
 ## Cấu trúc để đọc code
 
 ```text
-index.php                     # Entry point, render layout và page
-app/
-  bootstrap.php               # Session, tải dữ liệu, kiểm tra route/quyền
-  config.php                  # Cấu hình MySQL mặc định
-  database.php                # Kết nối PDO và hàm truy vấn
-  install.php                 # Tạo bảng, dữ liệu mẫu và admin đầu tiên
-  helpers.php                 # URL, escape HTML, CSRF, validation
-  cart.php                    # Tính giá, phí giao hàng, voucher
-  actions.php                 # Điều phối POST và xử lý giỏ hàng
-  auth_actions.php            # Đăng ký, đăng nhập, đăng xuất
-  order_actions.php           # Transaction đặt đơn, đánh giá
-  admin_actions.php           # Xử lý form quản trị
-/templates/
+index.php                     # Entry point, ghép View và layout
+Controller/
+  Controller.php              # Khởi tạo session, chuyển trang, tải dữ liệu
+  Actions.php                 # Điều phối form POST
+  UserController.php          # Đăng ký, đăng nhập, đăng xuất
+  AdminController.php         # Validate và xử lý form quản trị
+  OrderController.php         # Transaction đặt đơn và đánh giá
+  Access.php                  # Người dùng hiện tại và kiểm tra quyền
+  Functions.php               # Render, redirect, CSRF, validation, escape
+Model/
+  Connect.php                 # Kết nối PDO và hàm query dùng prepared statements
+  Model.php                   # Class data_shop và data_user, chứa truy vấn SQL
+  Cart.php                    # Tính tiền, đồng bộ giỏ hàng, kiểm tra voucher
+  Install.php                 # Tạo bảng, admin và dữ liệu mẫu
+View/
   layout/                     # Header, footer
-  components/                 # Card, ly trà, tóm tắt/chi tiết đơn, đánh giá
-  pages/                      # Các trang khách hàng, auth, setup, admin
+  components/                 # Card, ly trà, chi tiết đơn, đánh giá
+  pages/                      # Các màn hình khách hàng, auth, setup, khung admin
   admin/                      # Các màn hình quản trị
-/database/
-  schema.sql                  # 8 bảng và khóa ngoại
-  seed_products.php           # Menu mẫu cho lần cài đầu
-/assets/                      # CSS đã build và JavaScript
-/resources/                   # Source Tailwind và hình ly trà
-/tests/                       # Kiểm tra logic và luồng trình duyệt
+app/
+  config.php                  # Giữ đường dẫn cấu hình cũ để tương thích hosting
+  config.local.php            # Cấu hình riêng, không commit
+database/                    # Schema và 24 món mẫu (thư mục ở gốc project)
+assets/                       # CSS đã build và JavaScript
+resources/                    # Source Tailwind và hình ly trà
+tests/                        # Kiểm tra logic, seed và trình duyệt
 ```
 
-Đọc luồng đặt hàng theo thứ tự `bootstrap.php` → `actions.php` → `order_actions.php` → `templates/components/order-detail.php`. Form hoạt động khi tắt JavaScript; giá cuối cùng luôn được tính ở server.
+Đọc luồng đặt hàng theo thứ tự `Controller/Controller.php` → `Controller/Actions.php` → `Controller/OrderController.php` → `Model/Model.php` → `View/components/order-detail.php`. Form hoạt động khi tắt JavaScript; giá cuối cùng luôn được tính ở server.
+
+## Quy ước theo source MVC của giáo viên
+
+Bản mẫu dùng `Controller/Controller.php`, `Model/Connect.php`, `Model/Model.php` và `View/`, với class `data_shop`, `data_user`. Dự án áp dụng cấu trúc đó, tên phương thức dạng `select_shop_id`, `insert_shop`, `update_shop_id`, thụt lề 4 dấu cách và chú thích chia nhóm bằng tiếng Việt. Các Model dùng tham số có tên và biến `$sql` để dễ đọc từng truy vấn.
+
+Ví dụ lấy một sản phẩm:
+
+```php
+// Model/Model.php
+public function select_shop_id($id)
+{
+    $sql = 'SELECT * FROM products WHERE id=?';
+    return query($sql, [$id]);
+}
+
+// View/admin/products.php: đọc dữ liệu qua Model.
+$item = $data->select_shop_id((int) $edit)->fetch();
+```
+
+Controller nhận form, kiểm tra quyền/dữ liệu, gọi Model rồi chuyển trang. View gọi phương thức đọc của Model và render HTML như mẫu; không chứa SQL. `data_shop` quản lý dữ liệu cửa hàng; `data_user` quản lý tài khoản. Kết quả truy vấn là PDOStatement: `fetch()` lấy một dòng, `fetchAll()` lấy danh sách, `fetchColumn()` lấy một giá trị, `rowCount()` kiểm tra số dòng thay đổi.
+
+Vì website có nhiều chức năng hơn bài mẫu, các thao tác khách hàng/admin/đơn hàng được tách thành file Controller riêng để dễ tìm. Giữ PDO prepared statements, password hash, CSRF, transaction và route `index.php?page=...` hiện có. Không đổi sang mật khẩu thuần, xóa bằng GET hoặc tin tổng tiền từ trình duyệt. Giao diện Tailwind và 24 món mẫu giữ nguyên; không cần cài Node.js để chạy PHP.
+
+## Upload bản MVC lên InfinityFree đang chạy
+
+Không cần đổi database, import lại schema hoặc seed. Tên bảng, dữ liệu, tài khoản và URL giữ nguyên.
+
+1. Sao lưu source hosting và giữ riêng `app/config.local.php`.
+2. Upload đủ các thư mục mới **`Controller/`, `Model/`, `View/`**, gồm `.htaccess` bên trong; upload `assets/` nếu có thay đổi. Giữ đúng chữ hoa/thường vì hosting Linux phân biệt tên.
+3. Upload **`index.php` sau cùng** để chuyển sang bản mới khi các thư mục đã có đủ.
+4. Kiểm tra đăng nhập, menu, đặt đơn và trang quản trị.
+5. Khi đã hoạt động, xóa thư mục cũ `templates/` và các file PHP cũ trong `app/` ngoài **`config.php`, `config.local.php`**. Giữ `app/.htaccess`. Không xóa cả thư mục `app/`.
+
+Truy cập website qua `index.php`; không mở trực tiếp `View/pages/...php` hoặc Controller. Giữ `.htaccess` chặn truy cập trực tiếp các thư mục nội bộ. PHP built-in server không áp dụng `.htaccess`, chỉ dùng để phát triển local.
 
 ## Format, build và kiểm tra
 
@@ -157,19 +194,19 @@ Bài kiểm tra seed tạo rồi xóa một database tạm có tên ngẫu nhiê
 | Phần                                            | Vai trò                                                  | Liên hệ với React/JS                          |
 | ----------------------------------------------- | -------------------------------------------------------- | --------------------------------------------- |
 | `index.php`                                     | Điểm vào, ghép layout và page                            | Khung `App`, nhưng render trên server         |
-| `app/bootstrap.php`                             | Khởi tạo session, đọc route, kiểm tra quyền, tải dữ liệu | Router và bước chuẩn bị dữ liệu               |
-| `app/actions.php`                               | Nhận POST và điều phối theo `action`                     | Handler nhận form/API request                 |
-| `app/auth_actions.php`                          | Đăng ký, đăng nhập, đăng xuất                            | Backend xác thực                              |
-| `app/cart.php`                                  | Tính giá, kiểm tra tùy chọn, voucher                     | Hàm nghiệp vụ dùng chung                      |
-| `app/order_actions.php`                         | Ghi đơn trong transaction, lưu đánh giá                  | Service xử lý đơn                             |
-| `app/admin_actions.php`                         | Validate và ghi thay đổi quản trị                        | Backend CRUD                                  |
-| `app/database.php`, `config.php`                | Kết nối PDO, prepared statements, cấu hình               | Database client phía backend                  |
-| `app/install.php`                               | Khởi tạo bảng, admin và dữ liệu mẫu lần đầu              | Setup/seed                                    |
-| `app/helpers.php`                               | Render, URL, redirect, escape, CSRF, validation          | Utilities                                     |
-| `templates/layout/`                             | Header và footer                                         | Layout components                             |
-| `templates/pages/`                              | Các màn hình khách hàng và khung admin                   | Route components                              |
-| `templates/components/`                         | Card, ly trà, tóm tắt đơn, đánh giá                      | Reusable components, không có React lifecycle |
-| `templates/admin/`                              | Các màn hình quản trị                                    | Admin pages                                   |
+| `Controller/Controller.php`                     | Khởi tạo session, đọc route, kiểm tra quyền, tải dữ liệu | Router và bước chuẩn bị dữ liệu               |
+| `Controller/Actions.php`                        | Nhận POST và điều phối theo `action`                     | Handler nhận form/API request                 |
+| `Controller/UserController.php`                 | Đăng ký, đăng nhập, đăng xuất                            | Backend xác thực                              |
+| `Model/Cart.php`                                | Tính giá, kiểm tra tùy chọn, voucher                     | Hàm nghiệp vụ dùng chung                      |
+| `Controller/OrderController.php`                | Ghi đơn trong transaction, lưu đánh giá                  | Service xử lý đơn                             |
+| `Controller/AdminController.php`                | Validate và ghi thay đổi quản trị                        | Backend CRUD                                  |
+| `Model/Connect.php`, `app/config.php`           | Kết nối PDO, prepared statements, cấu hình               | Database client phía backend                  |
+| `Model/Install.php`                             | Khởi tạo bảng, admin và dữ liệu mẫu lần đầu              | Setup/seed                                    |
+| `Controller/Functions.php`                      | Render, URL, redirect, escape, CSRF, validation          | Utilities                                     |
+| `View/layout/`                                  | Header và footer                                         | Layout components                             |
+| `View/pages/`                                   | Các màn hình khách hàng và khung admin                   | Route components                              |
+| `View/components/`                              | Card, ly trà, tóm tắt đơn, đánh giá                      | Reusable components, không có React lifecycle |
+| `View/admin/`                                   | Các màn hình quản trị                                    | Admin pages                                   |
 | `database/schema.sql`                           | Cấu trúc 8 bảng và quan hệ                               | Database schema                               |
 | `database/seed_products.php`                    | Nguồn dữ liệu 24 món cho cài mới                         | Seed fixtures                                 |
 | `database/export_seed.php`, `seed_products.sql` | Xuất và import các món còn thiếu vào database đã cài     | Công cụ cập nhật dữ liệu mẫu                  |
@@ -178,6 +215,6 @@ Bài kiểm tra seed tạo rồi xóa một database tạm có tên ngẫu nhiê
 | `tests/`                                        | Kiểm tra logic, seed và trình duyệt                      | Unit/integration/E2E checks                   |
 | `package.json`, lockfile, Prettier              | Công cụ build, format, test                              | Dev tooling, không phải server Node.js        |
 
-GET: `index.php?page=menu` → bootstrap tải sản phẩm → template tạo HTML → trình duyệt hiển thị. POST: form gửi `action` và CSRF → kiểm tra quyền/dữ liệu → cập nhật session hoặc MySQL → redirect để render lại trang. Session giữ giỏ và ID đăng nhập; MySQL giữ dữ liệu lâu dài. JS chỉ tăng tiện ích, giá cuối cùng do PHP tính.
+GET: `index.php?page=menu` → Controller tải sản phẩm → template tạo HTML → trình duyệt hiển thị. POST: form gửi `action` và CSRF → kiểm tra quyền/dữ liệu → cập nhật session hoặc MySQL → redirect để render lại trang. Session giữ giỏ và ID đăng nhập; MySQL giữ dữ liệu lâu dài. JS chỉ tăng tiện ích, giá cuối cùng do PHP tính.
 
 Rà soát code: đã bỏ selector `.cup-brand svg` vì component ly trà không có SVG và sửa chú thích shadcn cũ. Các hàm xử lý, template và công cụ phát triển còn lại đều có nơi sử dụng; không xóa chỉ vì chúng không được upload lên hosting.

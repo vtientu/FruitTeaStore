@@ -1,7 +1,5 @@
 <?php $reviewableProducts = !$admin && $order['status'] === 'completed' ? availableProducts() : [];
-$items = query('SELECT * FROM order_items WHERE order_id=? ORDER BY id', [
-    $order['id'],
-])->fetchAll();
+$items = $data->select_order_items($order['id'])->fetchAll();
 ?>
 <article class="rounded-xl border p-5 md:p-7">
     <div class="flex flex-wrap items-center justify-between gap-3">

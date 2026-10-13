@@ -1,11 +1,5 @@
 <?php
-$categories = [
-    'Tất cả',
-    ...array_column(
-        query('SELECT name FROM categories WHERE active=1 ORDER BY id')->fetchAll(),
-        'name',
-    ),
-];
+$categories = ['Tất cả', ...array_column($data->select_active_categories()->fetchAll(), 'name')];
 $category = inputString($_GET, 'category', 'Tất cả');
 if (!in_array($category, $categories, true)) {
     $category = 'Tất cả';

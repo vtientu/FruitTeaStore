@@ -1,6 +1,10 @@
 <?php
+// =========================
+// ĐĂNG KÝ, ĐĂNG NHẬP, ĐĂNG XUẤT
+// =========================
 function handleAuth(string $action): never
 {
+    global $account;
     if ($action === 'logout') {
         $_SESSION = [];
         session_regenerate_id(true);
@@ -23,17 +27,13 @@ function handleAuth(string $action): never
                 'Kiểm tra email, mật khẩu 8–72 ký tự và mật khẩu xác nhận.',
             );
         }
-        if (query('SELECT id FROM users WHERE email=?', [$email])->fetch()) {
+        if ($account->check_user($email)->fetch()) {
             throw new InvalidArgumentException('Email đã được đăng ký.');
         }
-        query('INSERT INTO users(name,email,password_hash) VALUES(?,?,?)', [
-            $name,
-            $email,
-            password_hash($password, PASSWORD_DEFAULT),
-        ]);
+        $account->insert_user($name, $email, password_hash($password, PASSWORD_DEFAULT));
         $userId = (int) db()->lastInsertId();
     } else {
-        $user = query('SELECT * FROM users WHERE email=? AND active=1', [$email])->fetch();
+        $user = $account->login($email)->fetch();
         if (!$user || !password_verify($password, $user['password_hash'])) {
             throw new InvalidArgumentException(
                 'Email hoặc mật khẩu không đúng, hoặc tài khoản đã bị khóa.',

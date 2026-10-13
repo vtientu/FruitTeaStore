@@ -1,24 +1,8 @@
 <?php
-$reviews = query(
-    'SELECT r.*,u.name FROM reviews r JOIN users u ON u.id=r.user_id WHERE r.product_id=? ORDER BY r.created_at DESC LIMIT 20',
-    [$product['id']],
-)->fetchAll();
-$summary = query(
-    'SELECT COUNT(*) AS count,AVG(rating) AS average FROM reviews WHERE product_id=?',
-    [$product['id']],
-)->fetch();
-$canReview =
-    $user &&
-    query(
-        "SELECT oi.id FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.user_id=? AND oi.product_id=? AND o.status='completed' LIMIT 1",
-        [$user['id'], $product['id']],
-    )->fetch();
-$myReview = $user
-    ? query('SELECT * FROM reviews WHERE user_id=? AND product_id=?', [
-        $user['id'],
-        $product['id'],
-    ])->fetch()
-    : null;
+$reviews = $data->select_reviews($product['id'])->fetchAll();
+$summary = $data->count_reviews($product['id'])->fetch();
+$canReview = $user && $data->select_completed_purchase($user['id'], $product['id'])->fetch();
+$myReview = $user ? $data->select_user_review($user['id'], $product['id'])->fetch() : null;
 ?>
 <section class="px-6 pb-12 md:px-12">
     <h2>Khách nhà Mộc nói gì?</h2>

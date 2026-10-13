@@ -17,10 +17,11 @@ function url(string $page = 'home', array $params = []): string
     return 'index.php?' . http_build_query(['page' => $page] + $params);
 }
 
-function render(string $template, array $data = []): void
+function render(string $template, array $viewData = []): void
 {
-    extract($data, EXTR_SKIP);
-    require __DIR__ . '/../templates/' . $template . '.php';
+    global $data, $account;
+    extract($viewData, EXTR_SKIP);
+    require __DIR__ . '/../View/' . $template . '.php';
 }
 
 function redirect(string $page, array $params = []): never

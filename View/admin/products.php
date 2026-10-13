@@ -1,13 +1,8 @@
 <?php
-$rows = query(
-    'SELECT p.*,c.name AS category FROM products p JOIN categories c ON c.id=p.category_id ORDER BY p.id DESC',
-)->fetchAll();
-$categories = query('SELECT * FROM categories ORDER BY id')->fetchAll();
+$rows = $data->select_shop()->fetchAll();
+$categories = $data->select_categories()->fetchAll();
 $edit = inputString($_GET, 'edit');
-$item =
-    $edit && $edit !== 'new'
-        ? query('SELECT * FROM products WHERE id=?', [(int) $edit])->fetch()
-        : [];
+$item = $edit && $edit !== 'new' ? $data->select_shop_id((int) $edit)->fetch() : [];
 $item =
     ($_SESSION['admin_old']['action'] ?? '') === 'admin_product'
         ? $_SESSION['admin_old']

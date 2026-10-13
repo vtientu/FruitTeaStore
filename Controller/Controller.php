@@ -1,4 +1,7 @@
 <?php
+// =========================
+// KHỞI TẠO VÀ CHUYỂN TRANG
+// =========================
 // Mỗi request chỉ đi qua file này rồi render một trang trong danh sách cho phép.
 date_default_timezone_set('Asia/Ho_Chi_Minh');
 session_name('webphp_session_v2');
@@ -11,14 +14,15 @@ session_start();
 header('Content-Type: text/html; charset=UTF-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
-require __DIR__ . '/helpers.php';
-require __DIR__ . '/database.php';
-require __DIR__ . '/cart.php';
-require __DIR__ . '/install.php';
-require __DIR__ . '/auth_actions.php';
-require __DIR__ . '/order_actions.php';
-require __DIR__ . '/admin_actions.php';
-require __DIR__ . '/actions.php';
+require __DIR__ . '/Functions.php';
+require __DIR__ . '/../Model/Model.php';
+require __DIR__ . '/Access.php';
+require __DIR__ . '/../Model/Cart.php';
+require __DIR__ . '/../Model/Install.php';
+require __DIR__ . '/UserController.php';
+require __DIR__ . '/OrderController.php';
+require __DIR__ . '/AdminController.php';
+require __DIR__ . '/Actions.php';
 $_SESSION['csrf_token'] ??= bin2hex(random_bytes(32));
 $_SESSION['checkout_token'] ??= bin2hex(random_bytes(32));
 $_SESSION['cart'] ??= [];
@@ -39,7 +43,7 @@ $pages = [
 $ready = false;
 $databaseError = '';
 try {
-    $ready = (bool) query("SELECT COUNT(*) FROM users WHERE role='admin'")->fetchColumn();
+    $ready = (bool) $account->count_admin()->fetchColumn();
 } catch (Throwable $error) {
     $databaseError =
         'Chưa kết nối được dữ liệu. Hãy bật MySQL trong XAMPP, kiểm tra app/config.php rồi cài đặt.';
@@ -97,10 +101,7 @@ if ($page === 'admin') {
 if (
     $page === 'orders' &&
     inputString($_GET, 'id') !== '' &&
-    !query('SELECT id FROM orders WHERE id=? AND user_id=?', [
-        (int) inputString($_GET, 'id'),
-        $user['id'],
-    ])->fetch()
+    !$data->select_customer_order((int) inputString($_GET, 'id'), $user['id'])->fetch()
 ) {
     http_response_code(404);
     $page = 'not-found';

@@ -1,11 +1,8 @@
 <?php
 // entity do hai template cố định truyền vào, không lấy trực tiếp từ URL.
-$rows = query('SELECT * FROM ' . $entity . ' ORDER BY id DESC')->fetchAll();
+$rows = $data->select_catalog($entity)->fetchAll();
 $edit = inputString($_GET, 'edit');
-$item =
-    $edit && $edit !== 'new'
-        ? query('SELECT * FROM ' . $entity . ' WHERE id=?', [(int) $edit])->fetch()
-        : [];
+$item = $edit && $edit !== 'new' ? $data->select_catalog_id($entity, [(int) $edit])->fetch() : [];
 $item =
     ($_SESSION['admin_old']['action'] ?? '') === $action ? $_SESSION['admin_old'] : ($item ?: []);
 unset($_SESSION['admin_old']);

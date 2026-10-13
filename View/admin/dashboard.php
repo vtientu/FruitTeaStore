@@ -1,16 +1,10 @@
 <?php
-$stats = query(
-    "SELECT COUNT(*) AS orders, COALESCE(SUM(status='pending'),0) AS pending, COALESCE(SUM(CASE WHEN status='completed' THEN subtotal-discount ELSE 0 END),0) AS revenue FROM orders",
-)->fetch();
-$customers = (int) query("SELECT COUNT(*) FROM users WHERE role='customer'")->fetchColumn();
-$days = query(
-    "SELECT DATE(created_at) AS day, SUM(subtotal-discount) AS revenue FROM orders WHERE status='completed' AND created_at>=DATE_SUB(CURDATE(),INTERVAL 6 DAY) GROUP BY DATE(created_at) ORDER BY day",
-)->fetchAll();
+$stats = $data->count_orders()->fetch();
+$customers = (int) $account->count_customers()->fetchColumn();
+$days = $data->revenue_by_day()->fetchAll();
 $maxRevenue = max([1, ...array_column($days, 'revenue')]);
-$best = query(
-    "SELECT oi.product_name,SUM(oi.quantity) AS quantity FROM order_items oi JOIN orders o ON o.id=oi.order_id WHERE o.status='completed' GROUP BY oi.product_id,oi.product_name ORDER BY quantity DESC LIMIT 5",
-)->fetchAll();
-$recent = query('SELECT * FROM orders ORDER BY id DESC LIMIT 8')->fetchAll();
+$best = $data->select_best_sellers()->fetchAll();
+$recent = $data->select_recent_orders()->fetchAll();
 ?>
 <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
     <?php foreach (

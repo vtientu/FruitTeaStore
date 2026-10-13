@@ -1,9 +1,6 @@
 <?php
 $search = inputString($_GET, 'q');
-$rows = query(
-    'SELECT id,name,email,role,active,created_at FROM users WHERE name LIKE ? OR email LIKE ? ORDER BY id DESC',
-    ['%' . $search . '%', '%' . $search . '%'],
-)->fetchAll();
+$rows = $account->select_users('%' . $search . '%', '%' . $search . '%')->fetchAll();
 ?>
 <form method="get" class="mb-6 flex gap-3">
     <input type="hidden" name="page" value="admin" />
