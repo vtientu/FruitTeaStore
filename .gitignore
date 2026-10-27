@@ -3,3 +3,5 @@ node_modules/
 .DS_Store
 .env
 app/config.local.php
+
+/app/mail.local.php

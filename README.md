@@ -218,3 +218,15 @@ Bài kiểm tra seed tạo rồi xóa một database tạm có tên ngẫu nhiê
 GET: `index.php?page=menu` → Controller tải sản phẩm → template tạo HTML → trình duyệt hiển thị. POST: form gửi `action` và CSRF → kiểm tra quyền/dữ liệu → cập nhật session hoặc MySQL → redirect để render lại trang. Session giữ giỏ và ID đăng nhập; MySQL giữ dữ liệu lâu dài. JS chỉ tăng tiện ích, giá cuối cùng do PHP tính.
 
 Rà soát code: đã bỏ selector `.cup-brand svg` vì component ly trà không có SVG và sửa chú thích shadcn cũ. Các hàm xử lý, template và công cụ phát triển còn lại đều có nơi sử dụng; không xóa chỉ vì chúng không được upload lên hosting.
+
+
+### Email xác nhận đơn hàng
+
+Checkout bắt buộc email và lưu email tại thời điểm đặt hàng. Chỉ đơn mới được gửi xác nhận sau khi commit; gửi lại request cùng token không gửi lại email. Email bao gồm mã đơn, người nhận, email, số điện thoại, địa chỉ, sản phẩm, phí và tổng thanh toán. Mộc Trà có thêm tùy chọn đồ uống và giảm giá; Mochi Pet dùng nội dung quà cho thú cưng.
+
+- Sao chép `app/mail.local.example.php` thành `app/mail.local.php`, nhập tài khoản SMTP, App Password và địa chỉ người gửi. File thật đã được gitignore. Mặc định chưa bật gửi khi chưa cấu hình.
+- Hoặc dùng biến môi trường riêng `MOCTRA_MAIL_ENABLED=true`, `MOCTRA_SMTP_HOST`, `MOCTRA_SMTP_PORT`, `MOCTRA_SMTP_ENCRYPTION` (`tls`/587 hoặc `ssl`/465), `MOCTRA_SMTP_USERNAME`, `MOCTRA_SMTP_PASSWORD`, `MOCTRA_MAIL_FROM`. Hai dự án không đọc cấu hình của nhau.
+- PHP cần OpenSSL và CA certificate hợp lệ để xác minh TLS.
+- Database cũ: chạy một lần `database/migrations/20261027_order_email.sql` trên đúng database. Mochi Pet tự thêm cột khi `auto_setup` được bật; trường hợp đó không chạy migration thủ công nữa. Database mới dùng schema đã cập nhật.
+- Lỗi SMTP được ghi PHP error log theo ID đơn, không ghi thông tin khách/mật khẩu và không hủy đơn đã tạo. Hiện gửi đồng bộ, chưa có hàng đợi hay tự thử lại; cần kiểm tra log và xử lý thủ công nếu SMTP lỗi. SMTP chấp nhận thư chưa bảo đảm thư vào inbox.
+- Để kiểm tra gửi thật: cấu hình SMTP, tạo một đơn thử cho email bạn kiểm soát, kiểm tra nội dung và thử gửi lại request để xác nhận không tạo/gửi trùng. Không dùng mật khẩu đăng nhập Gmail thông thường.

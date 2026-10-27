@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . "/../Model/OrderMailer.php";
 // =========================
 // ĐẶT HÀNG VÀ ĐÁNH GIÁ
 // =========================
@@ -18,7 +19,11 @@ function placeOrder(): never
     $name = requiredText($_POST, 'name', 100);
     $address = requiredText($_POST, 'address', 500);
     $phone = inputString($_POST, 'phone');
-    $_SESSION['checkout_old'] = ['name' => $name, 'phone' => $phone, 'address' => $address];
+    $email = inputString($_POST, 'email');
+    $_SESSION['checkout_old'] = ['name' => $name, 'phone' => $phone, 'address' => $address, 'email' => $email];
+    if (strlen($email) > 254 || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        throw new InvalidArgumentException('Vui lòng nhập email nhận xác nhận đơn hàng hợp lệ.');
+    }
     if (!preg_match('/^\+?[0-9]{9,15}$/D', $phone)) {
         throw new InvalidArgumentException('Số điện thoại phải gồm 9–15 chữ số.');
     }
@@ -52,6 +57,7 @@ function placeOrder(): never
             $shipping,
             $subtotal - $discount + $shipping,
             $voucher ?: null,
+            $email,
         );
         $orderId = (int) db()->lastInsertId();
         foreach ($_SESSION['cart'] as $item) {
@@ -83,6 +89,7 @@ function placeOrder(): never
         }
         throw $error;
     }
+    send_tea_confirmation($data, $orderId);
     $_SESSION['cart'] = [];
     $_SESSION['checkout_token'] = bin2hex(random_bytes(32));
     unset($_SESSION['voucher'], $_SESSION['checkout_old']);

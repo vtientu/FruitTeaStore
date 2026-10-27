@@ -309,9 +309,10 @@ class data_shop
         $shipping_fee,
         $total,
         $voucher_code,
+        $email,
     ) {
         $sql =
-            'INSERT INTO orders(code,checkout_token,user_id,recipient_name,phone,address,subtotal,discount,shipping_fee,total,voucher_code) VALUES(?,?,?,?,?,?,?,?,?,?,?)';
+            'INSERT INTO orders(code,checkout_token,user_id,recipient_name,phone,address,subtotal,discount,shipping_fee,total,voucher_code,email) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)';
         return query($sql, [
             $code,
             $checkout_token,
@@ -324,6 +325,7 @@ class data_shop
             $shipping_fee,
             $total,
             $voucher_code,
+            $email,
         ]);
     }
 

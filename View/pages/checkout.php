@@ -1,4 +1,4 @@
-<?php $old = $_SESSION['checkout_old'] ?? ['name' => $user['name']]; ?>
+<?php $old = $_SESSION['checkout_old'] ?? ['name' => $user['name'], 'email' => $user['email'] ?? '']; ?>
 <section class="page-section">
     <p class="eyebrow">THÊM MỘT CHÚT THÔNG TIN</p>
     <h2>Gửi Mộc địa chỉ của bạn.</h2>
@@ -20,6 +20,11 @@
                     placeholder="Họ và tên"
                     autocomplete="name"
                 />
+            </label>
+            <label class="block text-sm">
+                Email nhận xác nhận đơn hàng
+                <input class="field mt-2" type="email" name="email" required maxlength="254"
+                    autocomplete="email" value="<?= e($old['email'] ?? '') ?>" placeholder="ban@example.com" />
             </label>
             <label class="block text-sm">
                 Số điện thoại
